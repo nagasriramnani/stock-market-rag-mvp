@@ -1,0 +1,60 @@
+# Stock Research Report
+
+**Date:** {{ date }}  
+**Tickers:** {{ tickers | join(', ') }}
+
+---
+
+## Executive Summary
+
+This report analyzes recent news and market data for {{ tickers | join(', ') }} over the past {{ time_window_hours }} hours.
+
+---
+
+## Price Snapshot
+
+{% for price in prices %}
+### {{ price.ticker }}
+
+- **Current Price:** ${{ "%.2f" | format(price.close) }}
+- **Day Change:** {{ "%.2f" | format(price.d1_change or 0) }}%
+- **Volume:** {{ "%.0f" | format(price.volume or 0) }}
+{% if price.d5_change %}
+- **5-Day Change:** {{ "%.2f" | format(price.d5_change) }}%
+{% endif %}
+
+{% endfor %}
+
+---
+
+## Top News Articles
+
+{% for article in (items | sort(attribute='impact', reverse=True) | list)[:20] %}
+
+### {{ article.title }}
+
+**Ticker:** {{ article.ticker }}  
+**Source:** {{ article.source or 'Unknown' }}  
+**Published:** {{ article.published_at.strftime('%Y-%m-%d %H:%M UTC') if article.published_at else 'Unknown' }}
+
+**Relevance:** {{ "%.2f" | format(article.relevance or 0) }}  
+**Sentiment:** {{ "%.2f" | format(article.sentiment or 0) }}  
+**Impact Score:** {{ "%.2f" | format(article.impact or 0) }}
+
+{% if article.summary %}
+{{ article.summary[:500] }}...
+{% endif %}
+
+[Source]({{ article.url }})
+
+---
+
+{% endfor %}
+
+## Methodology
+
+- News aggregation via Tavily API and RSS feeds
+- Relevance scoring using TF-IDF
+- Sentiment analysis via keyword matching
+- Impact ranking: relevance × |sentiment| × price volatility factor
+
